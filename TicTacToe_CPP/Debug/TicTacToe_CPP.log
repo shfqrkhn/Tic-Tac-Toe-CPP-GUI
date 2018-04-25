@@ -1,0 +1,4 @@
+﻿  TicTacToe_CPP.cpp
+c:\users\shfqr\documents\visual studio 2017\projects\tictactoe_cpp\tictactoe_cpp\tictactoe_cpp.cpp(362): warning C4101: 'temp': unreferenced local variable
+c:\users\shfqr\documents\visual studio 2017\projects\tictactoe_cpp\tictactoe_cpp\tictactoe_cpp.cpp(228): warning C4715: 'GetCellRect': not all control paths return a value
+  TicTacToe_CPP.vcxproj -> C:\Users\shfqr\Documents\Visual Studio 2017\Projects\TicTacToe_CPP\Debug\TicTacToe_CPP.exe
