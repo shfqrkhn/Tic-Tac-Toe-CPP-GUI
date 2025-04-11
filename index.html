@@ -3,445 +3,458 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hangman Adventure</title>
+    <title>Sleek Tic-Tac-Toe</title>
     <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
         body {
-            font-family: sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-            color: #333;
+            align-items: center;
+            padding: 20px;
         }
 
         .container {
-            background-color: #fff;
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            max-width: 800px;
-            width: 95%;
         }
 
         h1 {
-            color: #007bff;
+            color: var(--primary);
             margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 2.2rem;
         }
 
-        .mode-selection, .word-input-area, .category-selection, .game-area, .result {
-            margin-bottom: 20px;
-            width: 100%;
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            background: rgba(67, 97, 238, 0.1);
+            padding: 15px;
+            border-radius: var(--border-radius);
         }
 
-        .word-input-area input[type="text"] {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 80%;
-            margin-right: 10px;
+        .player-turn {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
         }
 
-        .word-input-area button, .category-selection button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
+        .score {
+            display: flex;
+            gap: 15px;
         }
 
-        .word-input-area button:hover, .category-selection button:hover {
-            background-color: #0056b3;
+        .score div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .word-display {
-            font-size: 2em;
-            margin-bottom: 15px;
-            letter-spacing: 10px;
+        .score span:first-child {
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
 
-        .alphabet-buttons button {
-            padding: 8px 15px;
-            margin: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: #eee;
-            transition: background-color 0.3s ease;
+        .score span:last-child {
+            font-weight: 700;
+            font-size: 1.2rem;
         }
 
-        .alphabet-buttons button:hover, .alphabet-buttons button:focus {
-            background-color: #ddd;
+        .x-score span:last-child {
+            color: var(--danger);
         }
 
-        .alphabet-buttons button.disabled {
-            background-color: #ccc;
-            color: #666;
-            border-color: #bbb;
-            cursor: not-allowed;
+        .o-score span:last-child {
+            color: var(--success);
         }
 
-        .power-ups {
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: white;
+            border: 2px solid rgba(67, 97, 238, 0.2);
+            border-radius: var(--border-radius);
             display: flex;
             justify-content: center;
-            margin-bottom: 15px;
-        }
-
-        .power-ups button {
-            padding: 8px 15px;
-            margin: 0 10px;
-            border: 1px solid #007bff;
-            border-radius: 4px;
-            background-color: #f0f8ff;
-            color: #007bff;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: var(--transition);
         }
 
-        .power-ups button:hover {
-            background-color: #007bff;
-            color: #fff;
+        .cell:hover {
+            background: rgba(67, 97, 238, 0.05);
+            border-color: var(--primary);
         }
 
-        .message {
-            font-weight: bold;
-            margin-top: 15px;
+        .cell.x {
+            color: var(--danger);
         }
 
-        .visual-narrative {
-            font-size: 1.5em;
-            margin-bottom: 15px;
+        .cell.o {
+            color: var(--success);
         }
 
-        .result button {
-            padding: 12px 25px;
-            background-color: #28a745;
-            color: #fff;
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
             border: none;
-            border-radius: 4px;
+            padding: 12px 25px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: var(--transition);
+            flex: 1;
+            max-width: 200px;
         }
 
-        .result button:hover {
-            background-color: #1e7e34;
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
         }
 
-        @media (max-width: 600px) {
-            .power-ups {
+        button:active {
+            transform: translateY(0);
+        }
+
+        .reset-btn {
+            background: var(--danger);
+        }
+
+        .reset-btn:hover {
+            background: #d11a6b;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .modal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: var(--box-shadow);
+            transform: translateY(-20px);
+            transition: var(--transition);
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        .modal .winner {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+
+        .modal .winner.x {
+            color: var(--danger);
+        }
+
+        .modal .winner.o {
+            color: var(--success);
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .cell {
+                font-size: 2.5rem;
+            }
+            
+            .controls {
                 flex-direction: column;
                 align-items: center;
             }
-            .power-ups button {
-                margin: 5px 0;
-            }
-            .alphabet-buttons {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
-            }
-            .alphabet-buttons button {
-                margin: 2px;
+            
+            button {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Hangman Adventure</h1>
-
-        <div class="mode-selection">
-            <button id="onePlayerBtn">1 Player</button>
-            <button id="twoPlayersBtn">2 Players</button>
-        </div>
-
-        <div class="word-input-area" style="display: none;">
-            <label for="playerWord">Player 1, enter your word:</label>
-            <input type="text" id="playerWord" placeholder="Enter word">
-            <button id="setWordBtn">Set Word</button>
-        </div>
-
-        <div class="category-selection" style="display: none;">
-            <label for="category">Choose a category:</label>
-            <select id="category">
-                <option value="" disabled selected>Select a category</option>
-                <option value="Famous Landmarks">Famous Landmarks</option>
-                <option value="Movie Titles">Movie Titles</option>
-                <option value="Scientific Terms">Scientific Terms</option>
-                <option value="Fantasy Creatures">Fantasy Creatures</option>
-            </select>
-            <button id="startGameBtn">Start Game</button>
-        </div>
-
-        <div class="game-area" style="display: none;">
-            <div class="visual-narrative" id="visualNarrative"></div>
-            <div class="word-display" id="wordDisplay"></div>
-            <div class="alphabet-buttons" id="alphabetButtons"></div>
-            <div class="power-ups">
-                <button id="revealVowel" disabled>Reveal Vowel (1)</button>
-                <button id="eliminateConsonant" disabled>Eliminate Consonant (1)</button>
-                <button id="thematicHint" disabled>Thematic Hint (1)</button>
+        <h1>Tic-Tac-Toe</h1>
+        
+        <div class="game-info">
+            <div class="player-turn">Player X's Turn</div>
+            <div class="score">
+                <div class="x-score">
+                    <span>Player X</span>
+                    <span>0</span>
+                </div>
+                <div class="o-score">
+                    <span>Player O</span>
+                    <span>0</span>
+                </div>
             </div>
-            <div class="message" id="message"></div>
         </div>
-
-        <div class="result" style="display: none;">
-            <h2 id="resultMessage"></h2>
-            <p>The word was: <span id="correctWord"></span></p>
-            <button id="restartBtn">Play Again</button>
+        
+        <div class="game-board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        
+        <div class="controls">
+            <button class="reset-btn">Reset Game</button>
+            <button class="new-game-btn">New Game</button>
+        </div>
+    </div>
+    
+    <div class="modal">
+        <div class="modal-content">
+            <h2>Game Over</h2>
+            <p class="result-message"></p>
+            <div class="winner"></div>
+            <button class="modal-btn">Play Again</button>
         </div>
     </div>
 
     <script>
-        const onePlayerBtn = document.getElementById('onePlayerBtn');
-        const twoPlayersBtn = document.getElementById('twoPlayersBtn');
-        const wordInputArea = document.querySelector('.word-input-area');
-        const categorySelection = document.querySelector('.category-selection');
-        const playerWordInput = document.getElementById('playerWord');
-        const setWordBtn = document.getElementById('setWordBtn');
-        const categorySelect = document.getElementById('category');
-        const startGameBtn = document.getElementById('startGameBtn');
-        const gameArea = document.querySelector('.game-area');
-        const visualNarrative = document.getElementById('visualNarrative');
-        const wordDisplay = document.getElementById('wordDisplay');
-        const alphabetButtons = document.getElementById('alphabetButtons');
-        const revealVowelBtn = document.getElementById('revealVowel');
-        const eliminateConsonantBtn = document.getElementById('eliminateConsonant');
-        const thematicHintBtn = document.getElementById('thematicHint');
-        const messageDisplay = document.getElementById('message');
-        const resultArea = document.querySelector('.result');
-        const resultMessage = document.getElementById('resultMessage');
-        const correctWordDisplay = document.getElementById('correctWord');
-        const restartBtn = document.getElementById('restartBtn');
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game state
+            const gameState = {
+                board: ['', '', '', '', '', '', '', '', ''],
+                currentPlayer: 'X',
+                gameActive: true,
+                scores: { X: 0, O: 0, draws: 0 }
+            };
 
-        let gameMode = null;
-        let wordToGuess = '';
-        let guessedLetters = [];
-        let incorrectGuesses = 0;
-        let maxIncorrectGuesses = 6; // You can adjust this
-        let powerUpRevealVowel = 1;
-        let powerUpEliminateConsonant = 1;
-        let powerUpThematicHint = 1;
-        let currentCategory = '';
-        let thematicHints = {
-            "Famous Landmarks": ["Often visited by tourists.", "A symbol of a city or country.", "Has historical significance."],
-            "Movie Titles": ["Released in the last decade.", "Won an Academy Award.", "Features a well-known actor."],
-            "Scientific Terms": ["Related to biology.", "Involves numbers or equations.", "Used in experiments."],
-            "Fantasy Creatures": ["Appears in myths or legends.", "Has magical abilities.", "Often found in fictional worlds."]
-        };
-        let words = {
-            "Famous Landmarks": ["EIFFEL TOWER", "STATUE OF LIBERTY", "GREAT WALL OF CHINA", "COLOSSEUM", "TAJ MAHAL"],
-            "Movie Titles": ["INCEPTION", "AVENGERS ENDGAME", "THE DARK KNIGHT", "PULP FICTION", "INTERSTELLAR"],
-            "Scientific Terms": ["PHOTOSYNTHESIS", "QUANTUM MECHANICS", "NEUROTRANSMITTER", "ELECTROMAGNETISM", "THERMODYNAMICS"],
-            "Fantasy Creatures": ["DRAGON", "UNICORN", "GRIFFIN", "PHOENIX", "GOBLIN"]
-        };
+            // DOM elements
+            const cells = document.querySelectorAll('.cell');
+            const playerTurnDisplay = document.querySelector('.player-turn');
+            const xScoreDisplay = document.querySelector('.x-score span:last-child');
+            const oScoreDisplay = document.querySelector('.o-score span:last-child');
+            const resetBtn = document.querySelector('.reset-btn');
+            const newGameBtn = document.querySelector('.new-game-btn');
+            const modal = document.querySelector('.modal');
+            const modalBtn = document.querySelector('.modal-btn');
+            const resultMessage = document.querySelector('.result-message');
+            const winnerDisplay = document.querySelector('.winner');
 
-        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            // Winning combinations
+            const winningConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6]             // diagonals
+            ];
 
-        function startGame() {
-            guessedLetters = [];
-            incorrectGuesses = 0;
-            powerUpRevealVowel = 1;
-            powerUpEliminateConsonant = 1;
-            powerUpThematicHint = 1;
-            updatePowerUpButtons();
-            messageDisplay.textContent = '';
-            visualNarrative.textContent = '';
-            resultArea.style.display = 'none';
-            gameArea.style.display = 'block';
-            createAlphabetButtons();
-            updateWordDisplay();
-        }
-
-        function selectRandomWord(category) {
-            const wordList = words[category];
-            return wordList[Math.floor(Math.random() * wordList.length)];
-        }
-
-        function createAlphabetButtons() {
-            alphabetButtons.innerHTML = '';
-            alphabet.split('').forEach(letter => {
-                const button = document.createElement('button');
-                button.textContent = letter;
-                button.addEventListener('click', () => handleGuess(letter));
-                alphabetButtons.appendChild(button);
-            });
-        }
-
-        function handleGuess(letter) {
-            if (guessedLetters.includes(letter)) {
-                return;
+            // Initialize game
+            function initGame() {
+                gameState.board = ['', '', '', '', '', '', '', '', ''];
+                gameState.gameActive = true;
+                gameState.currentPlayer = 'X';
+                
+                updatePlayerTurn();
+                cells.forEach(cell => {
+                    cell.textContent = '';
+                    cell.classList.remove('x', 'o');
+                    cell.style.pointerEvents = 'auto';
+                });
+                
+                // Close modal if open
+                modal.classList.remove('show');
             }
-            guessedLetters.push(letter);
-            const buttons = alphabetButtons.querySelectorAll('button');
-            buttons.forEach(button => {
-                if (button.textContent === letter) {
-                    button.classList.add('disabled');
-                }
-            });
 
-            if (wordToGuess.includes(letter)) {
-                updateWordDisplay();
-                if (checkWin()) {
-                    endGame(true);
-                }
-            } else {
-                incorrectGuesses++;
-                updateVisualNarrative();
-                if (incorrectGuesses >= maxIncorrectGuesses) {
-                    endGame(false);
-                }
+            // Update player turn display
+            function updatePlayerTurn() {
+                playerTurnDisplay.textContent = `Player ${gameState.currentPlayer}'s Turn`;
             }
-        }
 
-        function updateWordDisplay() {
-            let display = '';
-            for (const letter of wordToGuess) {
-                if (guessedLetters.includes(letter)) {
-                    display += letter + ' ';
-                } else {
-                    display += '_ ';
+            // Update scores display
+            function updateScores() {
+                xScoreDisplay.textContent = gameState.scores.X;
+                oScoreDisplay.textContent = gameState.scores.O;
+            }
+
+            // Handle cell click
+            function handleCellClick(e) {
+                const clickedCell = e.target;
+                const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+                // If cell already filled or game not active, ignore
+                if (gameState.board[clickedCellIndex] !== '' || !gameState.gameActive) {
+                    return;
                 }
+
+                // Update board and UI
+                gameState.board[clickedCellIndex] = gameState.currentPlayer;
+                clickedCell.textContent = gameState.currentPlayer;
+                clickedCell.classList.add(gameState.currentPlayer.toLowerCase());
+
+                // Check for win or draw
+                checkResult();
             }
-            wordDisplay.textContent = display.trim();
-        }
 
-        function updateVisualNarrative() {
-            const parts = ["head", "body", "left arm", "right arm", "left leg", "right leg"];
-            visualNarrative.textContent = `Incorrect guesses: ${incorrectGuesses}/${maxIncorrectGuesses}`;
-            // You can expand this to show a more visual representation
-            // For example, adding elements to the visualNarrative div based on incorrectGuesses
-        }
+            // Check game result
+            function checkResult() {
+                let roundWon = false;
 
-        function checkWin() {
-            return !wordToGuess.split('').some(letter => !guessedLetters.includes(letter));
-        }
-
-        function endGame(win) {
-            gameArea.style.display = 'none';
-            resultArea.style.display = 'block';
-            correctWordDisplay.textContent = wordToGuess;
-            if (win) {
-                resultMessage.textContent = 'Congratulations! You guessed the word!';
-            } else {
-                resultMessage.textContent = 'Game Over! You ran out of guesses.';
-            }
-        }
-
-        function enablePowerUp(button, count) {
-            button.disabled = count <= 0;
-        }
-
-        function updatePowerUpButtons() {
-            enablePowerUp(revealVowelBtn, powerUpRevealVowel);
-            enablePowerUp(eliminateConsonantBtn, powerUpEliminateConsonant);
-            enablePowerUp(thematicHintBtn, powerUpThematicHint);
-        }
-
-        function revealRandomVowel() {
-            if (powerUpRevealVowel > 0) {
-                powerUpRevealVowel--;
-                updatePowerUpButtons();
-                const vowels = 'AEIOU';
-                const unguessedVowels = wordToGuess.split('').filter(letter => vowels.includes(letter) && !guessedLetters.includes(letter));
-                if (unguessedVowels.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * unguessedVowels.length);
-                    handleGuess(unguessedVowels[randomIndex]);
-                } else {
-                    messageDisplay.textContent = "No unguessed vowels left!";
-                }
-            }
-        }
-
-        function eliminateRandomConsonant() {
-            if (powerUpEliminateConsonant > 0) {
-                powerUpEliminateConsonant--;
-                updatePowerUpButtons();
-                const consonants = alphabet.split('').filter(letter => !'AEIOU'.includes(letter));
-                const unguessedIncorrectConsonants = consonants.filter(letter => !wordToGuess.includes(letter) && !guessedLetters.includes(letter));
-                if (unguessedIncorrectConsonants.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * Math.min(2, unguessedIncorrectConsonants.length)); // Eliminate up to 2
-                    for (let i = 0; i < Math.min(2, unguessedIncorrectConsonants.length); i++) {
-                        const index = Math.floor(Math.random() * unguessedIncorrectConsonants.length);
-                        const consonantToRemove = unguessedIncorrectConsonants.splice(index, 1)[0];
-                        const buttons = alphabetButtons.querySelectorAll('button');
-                        buttons.forEach(button => {
-                            if (button.textContent === consonantToRemove) {
-                                button.classList.add('disabled');
-                            }
-                        });
-                        guessedLetters.push(consonantToRemove);
+                // Check win conditions
+                for (let i = 0; i < winningConditions.length; i++) {
+                    const [a, b, c] = winningConditions[i];
+                    if (gameState.board[a] === '' || gameState.board[b] === '' || gameState.board[c] === '') {
+                        continue;
                     }
-                } else {
-                    messageDisplay.textContent = "No unguessed incorrect consonants left!";
+                    if (gameState.board[a] === gameState.board[b] && gameState.board[b] === gameState.board[c]) {
+                        roundWon = true;
+                        break;
+                    }
                 }
-            }
-        }
 
-        function showThematicHint() {
-            if (powerUpThematicHint > 0) {
-                powerUpThematicHint--;
-                updatePowerUpButtons();
-                if (thematicHints[currentCategory] && thematicHints[currentCategory].length > 0) {
-                    const randomIndex = Math.floor(Math.random() * thematicHints[currentCategory].length);
-                    messageDisplay.textContent = `Hint: ${thematicHints[currentCategory][randomIndex]}`;
-                } else {
-                    messageDisplay.textContent = "No hints available for this category.";
+                // If won
+                if (roundWon) {
+                    gameState.scores[gameState.currentPlayer]++;
+                    updateScores();
+                    endGame(false);
+                    return;
                 }
+
+                // If draw
+                if (!gameState.board.includes('')) {
+                    gameState.scores.draws++;
+                    endGame(true);
+                    return;
+                }
+
+                // Switch player
+                gameState.currentPlayer = gameState.currentPlayer === 'X' ? 'O' : 'X';
+                updatePlayerTurn();
             }
-        }
 
-        // Event Listeners
-        onePlayerBtn.addEventListener('click', () => {
-            gameMode = 'onePlayer';
-            modeSelection.style.display = 'none';
-            categorySelection.style.display = 'block';
-        });
+            // End game
+            function endGame(isDraw) {
+                gameState.gameActive = false;
+                
+                // Disable all cells
+                cells.forEach(cell => {
+                    cell.style.pointerEvents = 'none';
+                });
 
-        twoPlayersBtn.addEventListener('click', () => {
-            gameMode = 'twoPlayers';
-            modeSelection.style.display = 'none';
-            wordInputArea.style.display = 'block';
-        });
-
-        setWordBtn.addEventListener('click', () => {
-            const word = playerWordInput.value.trim().toUpperCase();
-            if (word) {
-                wordToGuess = word;
-                wordInputArea.style.display = 'none';
-                startGame();
-            } else {
-                alert('Please enter a word for Player 2 to guess.');
+                // Show modal
+                if (isDraw) {
+                    resultMessage.textContent = 'The game ended in a draw!';
+                    winnerDisplay.textContent = '';
+                } else {
+                    resultMessage.textContent = 'The winner is:';
+                    winnerDisplay.textContent = `Player ${gameState.currentPlayer}`;
+                    winnerDisplay.classList.add(gameState.currentPlayer.toLowerCase());
+                }
+                
+                modal.classList.add('show');
             }
-        });
 
-        startGameBtn.addEventListener('click', () => {
-            currentCategory = categorySelect.value;
-            if (currentCategory) {
-                wordToGuess = selectRandomWord(currentCategory);
-                categorySelection.style.display = 'none';
-                startGame();
-            } else {
-                alert('Please select a category.');
+            // Reset game (keep scores)
+            function resetGame() {
+                initGame();
             }
-        });
 
-        restartBtn.addEventListener('click', () => {
-            resultArea.style.display = 'none';
-            gameArea.style.display = 'none';
-            wordInputArea.style.display = 'none';
-            categorySelection.style.display = 'none';
-            modeSelection.style.display = 'block';
-            playerWordInput.value = '';
-        });
+            // New game (reset scores)
+            function newGame() {
+                gameState.scores = { X: 0, O: 0, draws: 0 };
+                updateScores();
+                initGame();
+            }
 
-        revealVowelBtn.addEventListener('click', revealRandomVowel);
-        eliminateConsonantBtn.addEventListener('click', eliminateRandomConsonant);
-        thematicHintBtn.addEventListener('click', showThematicHint);
+            // Event listeners
+            cells.forEach(cell => {
+                cell.addEventListener('click', handleCellClick);
+            });
+
+            resetBtn.addEventListener('click', resetGame);
+            newGameBtn.addEventListener('click', newGame);
+            modalBtn.addEventListener('click', initGame);
+
+            // Initialize the game
+            initGame();
+        });
     </script>
 </body>
 </html>
