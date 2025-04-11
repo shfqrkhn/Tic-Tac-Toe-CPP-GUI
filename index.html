@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman: Time Heist</title>
+    <style>
+        :root {
+            --era-ancient: #d4a76a;
+            --era-medieval: #9a7b4f;
+            --era-future: #6a8fd4;
+            --dark: #222;
+            --light: #f5f5f5;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background 0.5s;
+        }
+        body.ancient { background: linear-gradient(135deg, var(--era-ancient), #8b5a2b); }
+        body.medieval { background: linear-gradient(135deg, var(--era-medieval), #5d4037); }
+        body.future { background: linear-gradient(135deg, var(--era-future), #3d5a80); }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .era-display {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .hangman-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+        .hangman-part {
+            position: absolute;
+            background: white;
+            display: none;
+        }
+        /* Hangman parts */
+        .gallows { width: 100px; height: 10px; top: 0; left: 50px; background: #8B4513 !important; display: block; }
+        .pole { width: 10px; height: 200px; left: 50px; background: #8B4513 !important; display: block; }
+        .beam { width: 100px; height: 10px; top: 0; left: 60px; background: #8B4513 !important; }
+        .rope { width: 5px; height: 30px; top: 10px; left: 150px; background: #8B4513 !important; }
+        .head { width: 40px; height: 40px; border-radius: 50%; top: 40px; left: 130px; }
+        .body { width: 10px; height: 60px; top: 80px; left: 150px; }
+        .left-arm { width: 40px; height: 10px; top: 90px; left: 120px; transform: rotate(30deg); }
+        .right-arm { width: 40px; height: 10px; top: 90px; left: 150px; transform: rotate(-30deg); }
+        .left-leg { width: 40px; height: 10px; top: 140px; left: 120px; transform: rotate(-30deg); }
+        .right-leg { width: 40px; height: 10px; top: 140px; left: 150px; transform: rotate(30deg); }
+        
+        .hint-emoji {
+            font-size: 3rem;
+            margin: 10px 0;
+        }
+        .word-display {
+            font-size: 2rem;
+            letter-spacing: 10px;
+            min-height: 60px;
+        }
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+        .key {
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .key:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .key.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .key.correct {
+            background: #4caf50;
+        }
+        .key.wrong {
+            background: #f44336;
+        }
+        .message {
+            font-size: 1.2rem;
+            margin: 20px 0;
+            min-height: 30px;
+        }
+        .artifacts {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .artifact {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .artifact.collected {
+            background: gold;
+            color: var(--dark);
+        }
+        .restart-btn {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+        .restart-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        @media (max-width: 600px) {
+            .keyboard {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            .key {
+                padding: 8px;
+                font-size: 1rem;
+            }
+            .hint-emoji {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="ancient">
+    <div class="container">
+        <h1>Hangman: Time Heist</h1>
+        <div class="era-display">Ancient Era</div>
+        
+        <div class="game-area">
+            <div class="hangman-container">
+                <div class="hangman-part gallows"></div>
+                <div class="hangman-part pole"></div>
+                <div class="hangman-part beam"></div>
+                <div class="hangman-part rope"></div>
+                <div class="hangman-part head"></div>
+                <div class="hangman-part body"></div>
+                <div class="hangman-part left-arm"></div>
+                <div class="hangman-part right-arm"></div>
+                <div class="hangman-part left-leg"></div>
+                <div class="hangman-part right-leg"></div>
+            </div>
+            
+            <div class="hint-emoji" id="hint-emoji">⏳</div>
+            <div class="word-display" id="word-display"></div>
+        </div>
+        
+        <div class="artifacts">
+            <div class="artifact" id="artifact1">⚱️</div>
+            <div class="artifact" id="artifact2">🏰</div>
+            <div class="artifact" id="artifact3">🚀</div>
+        </div>
+        
+        <div class="message" id="message">Guess the word to steal the artifact!</div>
+        
+        <div class="keyboard" id="keyboard"></div>
+        
+        <button class="restart-btn" id="restart-btn">New Heist</button>
+    </div>
+
+    <script>
+        // Game Data
+        const WORDS_BY_ERA = {
+            ancient: [
+                { word: "PYRAMID", hint: "🏺" },
+                { word: "MUMMY", hint: "⚰️" },
+                { word: "PHARAOH", hint: "👑" },
+                { word: "SCARAB", hint: "🐞" },
+                { word: "SPHINX", hint: "🦁" }
+            ],
+            medieval: [
+                { word: "CASTLE", hint: "🏰" },
+                { word: "KNIGHT", hint: "⚔️" },
+                { word: "DRAGON", hint: "🐉" },
+                { word: "KINGDOM", hint: "👑" },
+                { word: "SWORD", hint: "🗡️" }
+            ],
+            future: [
+                { word: "ROBOT", hint: "🤖" },
+                { word: "LASER", hint: "🔫" },
+                { word: "SPACESHIP", hint: "🚀" },
+                { word: "GALAXY", hint: "🌌" },
+                { word: "TECH", hint: "💻" }
+            ]
+        };
+        
+        const ERAS = ["ancient", "medieval", "future"];
+        const ARTIFACTS = ["⚱️", "🏰", "🚀"];
+        const MAX_TRIES = 6; // Standard hangman tries (head, body, arms, legs)
+        const HANGMAN_PARTS = ["head", "body", "left-arm", "right-arm", "left-leg", "right-leg"];
+        
+        // Game State
+        let currentEraIndex = 0;
+        let currentWordObj = {};
+        let guessedLetters = [];
+        let wrongGuesses = 0;
+        let gameActive = false;
+        
+        // DOM Elements
+        const wordDisplay = document.getElementById("word-display");
+        const keyboard = document.getElementById("keyboard");
+        const messageEl = document.getElementById("message");
+        const eraDisplay = document.querySelector(".era-display");
+        const hintEmoji = document.getElementById("hint-emoji");
+        const restartBtn = document.getElementById("restart-btn");
+        const artifactEls = [
+            document.getElementById("artifact1"),
+            document.getElementById("artifact2"),
+            document.getElementById("artifact3")
+        ];
+        const hangmanParts = {
+            "head": document.querySelector(".head"),
+            "body": document.querySelector(".body"),
+            "left-arm": document.querySelector(".left-arm"),
+            "right-arm": document.querySelector(".right-arm"),
+            "left-leg": document.querySelector(".left-leg"),
+            "right-leg": document.querySelector(".right-leg")
+        };
+        
+        // Initialize
+        function init() {
+            createKeyboard();
+            restartBtn.addEventListener("click", startGame);
+            startGame();
+        }
+        
+        // Start a new game
+        function startGame() {
+            currentEraIndex = 0;
+            guessedLetters = [];
+            wrongGuesses = 0;
+            resetHangman();
+            updateEra();
+            startRound();
+            gameActive = true;
+            messageEl.textContent = "Guess the word to steal the artifact!";
+            
+            // Reset artifacts
+            artifactEls.forEach(el => el.classList.remove("collected"));
+        }
+        
+        // Start a new round (era)
+        function startRound() {
+            currentWordObj = getRandomWord();
+            hintEmoji.textContent = currentWordObj.hint;
+            guessedLetters = [];
+            wrongGuesses = 0;
+            resetHangman();
+            updateWordDisplay();
+            updateKeyboard();
+        }
+        
+        // Reset hangman visual
+        function resetHangman() {
+            Object.values(hangmanParts).forEach(part => {
+                part.style.display = "none";
+            });
+            // Show static parts (gallows)
+            document.querySelector(".gallows").style.display = "block";
+            document.querySelector(".pole").style.display = "block";
+            document.querySelector(".beam").style.display = "block";
+            document.querySelector(".rope").style.display = "block";
+        }
+        
+        // Update hangman visual
+        function updateHangman() {
+            if (wrongGuesses > 0 && wrongGuesses <= HANGMAN_PARTS.length) {
+                const part = HANGMAN_PARTS[wrongGuesses - 1];
+                hangmanParts[part].style.display = "block";
+            }
+        }
+        
+        // Update era display and background
+        function updateEra() {
+            const era = ERAS[currentEraIndex];
+            document.body.className = era;
+            eraDisplay.textContent = `${era.charAt(0).toUpperCase() + era.slice(1)} Era`;
+        }
+        
+        // Get random word for current era
+        function getRandomWord() {
+            const era = ERAS[currentEraIndex];
+            const words = WORDS_BY_ERA[era];
+            return words[Math.floor(Math.random() * words.length)];
+        }
+        
+        // Update the word display with blanks/guessed letters
+        function updateWordDisplay() {
+            let display = "";
+            for (const letter of currentWordObj.word) {
+                if (guessedLetters.includes(letter)) {
+                    display += letter + " ";
+                } else {
+                    display += "_ ";
+                }
+            }
+            wordDisplay.textContent = display.trim();
+            
+            // Check for win
+            if (!display.includes("_")) {
+                winRound();
+            }
+        }
+        
+        // Update keyboard buttons
+        function updateKeyboard() {
+            const buttons = keyboard.querySelectorAll(".key");
+            buttons.forEach(button => {
+                const letter = button.textContent;
+                if (guessedLetters.includes(letter)) {
+                    button.classList.add("used");
+                    button.classList.toggle("correct", currentWordObj.word.includes(letter));
+                    button.classList.toggle("wrong", !currentWordObj.word.includes(letter));
+                } else {
+                    button.className = "key";
+                }
+            });
+        }
+        
+        // Handle letter guess
+        function guessLetter(letter) {
+            if (!gameActive || guessedLetters.includes(letter)) return;
+            
+            guessedLetters.push(letter);
+            
+            if (!currentWordObj.word.includes(letter)) {
+                wrongGuesses++;
+                updateHangman();
+                
+                if (wrongGuesses >= MAX_TRIES) {
+                    endRound(false);
+                    return;
+                }
+            }
+            
+            updateWordDisplay();
+            updateKeyboard();
+        }
+        
+        // Win current round
+        function winRound() {
+            artifactEls[currentEraIndex].classList.add("collected");
+            
+            // Move to next era or end game
+            currentEraIndex++;
+            if (currentEraIndex < ERAS.length) {
+                setTimeout(() => {
+                    updateEra();
+                    startRound();
+                    messageEl.textContent = "Artifact stolen! Next era...";
+                }, 1500);
+            } else {
+                endGame(true);
+            }
+        }
+        
+        // End round (lose)
+        function endRound(won) {
+            gameActive = false;
+            messageEl.textContent = `Game Over! The word was ${currentWordObj.word}.`;
+            // Reveal all letters
+            let display = "";
+            for (const letter of currentWordObj.word) {
+                display += letter + " ";
+            }
+            wordDisplay.textContent = display.trim();
+        }
+        
+        // End game (win all eras)
+        function endGame(won) {
+            gameActive = false;
+            messageEl.textContent = "Time Heist Complete! All artifacts stolen!";
+        }
+        
+        // Create keyboard buttons
+        function createKeyboard() {
+            keyboard.innerHTML = "";
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const button = document.createElement("button");
+                button.className = "key";
+                button.textContent = letter;
+                button.addEventListener("click", () => guessLetter(letter));
+                keyboard.appendChild(button);
+            }
+        }
+        
+        // Keyboard event listener
+        document.addEventListener("keydown", (e) => {
+            if (/^[a-z]$/i.test(e.key)) {
+                guessLetter(e.key.toUpperCase());
+            }
+        });
+        
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
